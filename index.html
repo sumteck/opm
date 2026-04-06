@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Office Proceedings Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #84b7e4;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+      }
+      .input-panel {
+        flex: 1;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .fieldset {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      .in-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .in-group {
+        flex: 1;
+        min-width: 150px;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 3px;
+        font-weight: bold;
+        color: #666;
+      }
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      .btn-add {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 5px;
+        font-weight: bold;
+      }
+
+      .preview-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #printable-area {
+        width: 210mm;
+        min-height: auto;
+        padding: 20mm 20mm 5px 20mm;
+        background: white;
+        box-shadow: none;
+        box-sizing: border-box;
+        font-family: "Times New Roman", Times, serif;
+        line-height: 1.5;
+        color: black;
+        position: relative;
+      }
+      .pdf-header {
+        text-align: center;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+      .pdf-header p {
+        margin: 0;
+      }
+      .ref-section {
+        display: flex;
+        margin-bottom: 15px;
+      }
+      .ref-label {
+        font-weight: bold;
+        width: 60px;
+        flex-shrink: 0;
+      }
+      .ref-list {
+        flex-grow: 1;
+        margin-left: 10px;
+      }
+      .order-meta {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        border-top: 2px solid rgb(7, 3, 3);
+        border-bottom: 2px solid black;
+        padding: 5px 0;
+        margin: 15px 0;
+      }
+      table.receipt-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      table.receipt-table th,
+      table.receipt-table td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+        font-size: 14px;
+      }
+      .c {
+        text-align: center !important;
+      }
+      .r {
+        text-align: right !important;
+      }
+      .pdf-footer {
+        margin-top: 50px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        font-size: 14px;
+        position: relative;
+        z-index: 2;
+        clear: both;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .uploaded-img {
+        max-width: 150px;
+        max-height: 80px;
+        display: block;
+        margin: 5px 0 5px auto;
+        display: none;
+      }
+      .office-seal-img {
+        max-width: 150px;
+        max-height: 80px;
+        display: block;
+        margin: 5px auto 5px 0;
+        display: none;
+      }
+      .upload-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 5px 0;
+      }
+      .upload-row {
+        display: flex;
+        align-items: center;
+      }
+      .upload-row label {
+        width: 120px;
+        font-weight: 500;
+        color: #333;
+      }
+      .btn-print {
+        background: #28a745;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 15px;
+        font-weight: bold;
+      }
+      table tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      table {
+        page-break-inside: auto;
+      }
+      .btn-remove {
+        background: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-left: 5px;
+        height: 35px;
+        align-self: flex-end;
+      }
+      .btn-remove:hover {
+        background: #cc0000;
+      }
+      /* എഡിറ്റ് ചെയ്യാവുന്ന ഭാഗങ്ങളിൽ മൗസ് വരുമ്പോൾ */
+      [contenteditable="true"]:hover {
+        outline: 1px dashed #007bff;
+        background-color: #f8fbff; /* ഒരു നേരിയ നീല നിറം */
+        cursor: text;
+      }
+
+      /* PDF എടുക്കുമ്പോൾ ഈ ബോർഡറും നിറവും കാണാതിരിക്കാൻ (നിങ്ങൾ html2pdf ഉപയോഗിക്കുന്നതുകൊണ്ട് ഇത് കൊടുക്കുന്നത് നല്ലതാണ്) */
+      @media print {
+        [contenteditable="true"] {
+          outline: none !important;
+          background-color: transparent !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="input-panel">
+      <h3>1. Institution Details</h3>
+      <div class="fieldset">
+        <label>Name of Institution & Place</label>
+        <input
+          type="text"
+          id="inInstName"
+          value=""
+          placeholder="Name of Institution & Place "
+          oninput="updatePDF('outInstName')"
+        />
+        <div class="in-row" style="margin-top: 10px">
+          <div class="in-group">
+            <label>DDO Name</label>
+            <input
+              type="text"
+              id="inDdoName"
+              value=""
+              placeholder="DDO Name"
+              oninput="updatePDF('outDdoName')"
+            />
+          </div>
+          <div class="in-group">
+            <label>PEN</label>
+            <input
+              type="text"
+              id="inDdoPen"
+              value=""
+              placeholder="123456 "
+              oninput="updatePDF('outDdoPen')"
+            />
+          </div>
+          <div class="in-group">
+            <label>Designation</label>
+            <input
+              type="text"
+              id="inDdoDesig"
+              value=""
+              placeholder="Designation "
+              oninput="updatePDF('outDdoDesig')"
+            />
+          </div>
+        </div>
+      </div>
+
+      <h3>2. Order Details</h3>
+      <div class="fieldset">
+        <div class="in-row">
+          <div class="in-group">
+            <label>Order No.</label>
+            <input
+              type="text"
+              id="inOrderNo"
+              value=""
+              placeholder="C-1233/2026 "
+              oninput="updatePDF('outOrderNo')"
+            />
+          </div>
+          <div class="in-group">
+            <label>Date</label>
+            <input
+              type="text"
+              id="inDate"
+              value=""
+              placeholder="dd/mm/yyyy "
+              oninput="updatePDF('outDate')"
+            />
+          </div>
+        </div>
+      </div>
+
+      <h3>3. Employee Details</h3>
+      <div class="fieldset">
+        <div id="employee-inputs">
+          <div class="in-row">
+            <div class="in-group">
+              <label>Name & Pen</label>
+              <input
+                type="text"
+                class="e-name"
+                value=""
+                placeholder=" Name & Pen"
+                oninput="populateTable()"
+              />
+            </div>
+            <div class="in-group">
+              <label>Designation</label>
+              <input
+                type="text"
+                class="e-desig"
+                value=""
+                placeholder="Designation "
+                oninput="populateTable()"
+              />
+            </div>
+            <div class="in-group">
+              <label>Amount</label>
+              <input
+                type="number"
+                class="e-amt"
+                value=""
+                placeholder="10000 "
+                oninput="populateTable()"
+              />
+            </div>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addEmployeeInput()">
+          + Add More Employee
+        </button>
+      </div>
+
+      <h3>4. Allowance Type</h3>
+      <div class="fieldset">
+        <label>Select Allowance</label>
+        <select id="inAllowanceType" onchange="updateAllowanceText(this.value)">
+          <option value="Uniform Allowance(13)">
+            1. Uniform Allowance(13)
+          </option>
+          <option value="Foot Wear Allowance(16)">
+            2. Foot Wear Allowance(16)
+          </option>
+          <option value="Warm Clothing Allowance (19)">
+            3. Warm Clothing Allowance (19)
+          </option>
+          <option value="Conveyance Allowance(62)">
+            4. Conveyance Allowance(62)
+          </option>
+          <option value="Post mortem allowance(63)">
+            5. Post mortem allowance(63)
+          </option>
+          <option value="Day off Allowance(65)">
+            6. Day off Allowance(65)
+          </option>
+          <option value="Education allowance(84)">
+            7. Education allowance(84)
+          </option>
+          <option value="Permanent Conveyance Allowance(100)">
+            8. Permanent Conveyance Allowance(100)
+          </option>
+          <option value="Permanent Travelling Allowance(101)">
+            9. Permanent Travelling Allowance(101)
+          </option>
+          <option value="Periodical Allowance(129)">
+            10. Periodical Allowance(129)
+          </option>
+          <option value="Notice Pay(132)">11. Notice Pay(132)</option>
+          <option value="Rent Recovery">12. Rent Recovery</option>
+          <option value="Daily Allowance">13. Daily Allowance</option>
+          <option value="Exgratia Allowance(136)">
+            14. Exgratia Allowance(136)
+          </option>
+          <option value="Luggage Allowance (13)">
+            15. Luggage Allowance (13)
+          </option>
+          <option value="Foot Wear Allowance (wages) (155)">
+            16. Foot Wear Allowance (wages) (155)
+          </option>
+          <option value="Police spl.Allowance Sabarimala Duty(168)">
+            17. Police spl.Allowance Sabarimala Duty(168)
+          </option>
+          <option value="Spl.Allowance Election Duty(169)">
+            18. Spl.Allowance Election Duty(169)
+          </option>
+          <option value="Uniform Allowance (Wages) (170)">
+            19. Uniform Allowance (Wages) (170)
+          </option>
+          <option value="Stitching Allowance (wages)(192)">
+            20. Stitching Allowance (wages)(192)
+          </option>
+          <option value="Shift Allowance(197)">21. Shift Allowance(197)</option>
+          <option value="Laptop Allowance(Judges)">
+            22. Laptop Allowance(Judges)
+          </option>
+          <option value="Refund of Onam Advance (202)">
+            23. Refund of Onam Advance (202)
+          </option>
+          <option value="Refund of Onam Advance Wages(204)">
+            24. Refund of Onam Advance Wages(204)
+          </option>
+          <option value="Robe allowance(128)">25. Robe allowance(128)</option>
+          <option value="Mobile Phone Purchase Allowance (207)">
+            26. Mobile Phone Purchase Allowance (207)
+          </option>
+          <option value="Home Orderly Allowance judiciary(209)">
+            27. Home Orderly Allowance judiciary(209)
+          </option>
+          <option value="Child Education Allowance Judiciary(210)">
+            28. Child Education Allowance Judiciary(210)
+          </option>
+          <option value="Transport Allowance Judiciary(211)">
+            29. Transport Allowance Judiciary(211)
+          </option>
+          <option value="Furniture and Ac Allowance Judiciary(212)">
+            30. Furniture and Ac Allowance Judiciary(212)
+          </option>
+          <option value="Dress Allowance">31. Dress Allowance</option>
+        </select>
+      </div>
+      <h3>5. Reference Details</h3>
+      <div class="fieldset">
+        <div id="reference-inputs">
+          <!-- Populated by JS on load -->
+        </div>
+        <button class="btn-add" onclick="addRefInput()">
+          + Add More Reference
+        </button>
+      </div>
+
+      <h3>6. Certificate & Sanction</h3>
+      <div class="fieldset">
+        <label><dist>Dist/Sub Treasury</label>
+        <input
+          type="text"
+          id="inTreasury"
+          value=""
+          placeholder="Treasury Name "
+          oninput="updatePDF('outTreasury')"
+        />
+        <label style="margin-top: 10px">Head of Account</label>
+        <input
+          type="text"
+          id="inHoA"
+          value=""
+          placeholder="2210-02-101-97-00-01-05 Other Allowances "
+          oninput="updatePDF('outHoA')"
+        />
+      </div>
+
+      <h3>
+        7. Upload Signature & seals
+        <a
+          href="https://cert.rubundroid.com/img"
+          target="_blank"
+          title="Crop/Edit Images"
+          style="
+            text-decoration: none;
+            font-size: 16px;
+            margin-left: 8px;
+            color: #1565c0;
+          "
+        >
+          ✂️
+        </a>
+      </h3>
+      <div class="fieldset">
+        <div class="upload-stack">
+          <div class="upload-row">
+            <label>Signature</label>
+            <input type="file" onchange="loadImg(event, 'outSig')" />
+          </div>
+          <div class="upload-row">
+            <label>Desig. Seal</label>
+            <input type="file" onchange="loadImg(event, 'outDesigSeal')" />
+          </div>
+          <div class="upload-row">
+            <label>Office Seal</label>
+            <input type="file" onchange="loadImg(event, 'outOfficeSeal')" />
+          </div>
+        </div>
+      </div>
+      <h4>8. File Manager</h4>
+      <div class="fieldset">
+        <div
+          class="draft-buttons"
+          style="margin: 20px 0; display: flex; gap: 10px"
+        >
+          <button
+            onclick="saveDraft()"
+            style="
+              padding: 10px 55px;
+              background: #28a745;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+            "
+          >
+            Save Draft 💾
+          </button>
+
+          <button
+            onclick="loadDraft()"
+            style="
+              padding: 10px 55px;
+              background: #17a2b8;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+            "
+          >
+            Load Draft 📄
+          </button>
+
+          <button
+            onclick="clearDraft()"
+            style="
+              padding: 10px 55px;
+              background: #dc3545;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+            "
+          >
+            Clear Draft 🗑️
+          </button>
+        </div>
+      </div>
+      <div
+        id="counterContainer"
+        style="
+          display: none;
+          text-align: center;
+          font-size: 14px;
+          color: #4b5563;
+          margin-top: 15px;
+          padding: 10px;
+          background-color: #e0e7ff;
+          border-radius: 8px;
+        "
+      >
+        Count:
+        <span
+          id="countDisplay"
+          style="font-weight: 900; color: #4f46e5; font-size: 16px"
+          >0</span
+        >
+      </div>
+    </div>
+    <div class="preview-panel">
+      <div id="printable-area">
+        <div class="pdf-header">
+          <p>
+            Proceedings of
+            <span id="outHeaderDesig"></span>,
+          </p>
+          <p>
+            <span id="outInstName"></span>
+          </p>
+        </div>
+
+        <p>
+          <b>Present:</b> <span id="outDdoName"></span>; PEN
+          <span id="outDdoPen"></span>; <span id="outDdoDesig"></span>.
+        </p>
+
+        <p>
+          <b>Sub: -</b>
+          <span class="allowance-text"></span> for the year
+          <span class="currentFY"></span> - Sanctioned orders issued-
+        </p>
+
+        <div class="ref-section">
+          <div class="ref-label">Ref: -</div>
+          <div class="ref-list" id="ref-list-content">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="order-meta">
+          <span>Order No. <span id="outOrderNo"></span></span>
+          <span>Dated <span id="outDate"></span></span>
+        </div>
+
+        <p
+          contenteditable="true"
+          style="text-indent: 40px; text-align: justify; line-height: 1.3"
+        >
+          As per Govt: Order read above, the following employees of this
+          institution are eligible for
+          <span class="allowance-text"></span> for the year
+          <span class="currentFY"></span>
+          <span id="page-ref-text" style="display: inline"></span>
+          as per ref. 1, details noted below.
+        </p>
+
+        <table class="receipt-table">
+          <thead>
+            <tr>
+              <th class="c" style="width: 10%">Sl No.</th>
+              <th style="width: 40%">Name & PEN</th>
+              <th style="width: 35%">Designation</th>
+              <th class="c" style="width: 15%">Amount ₹</th>
+            </tr>
+          </thead>
+          <tbody id="pdfTableBody"></tbody>
+          <tfoot>
+            <tr style="font-weight: bold">
+              <td colspan="3" class="r">GRAND TOTAL ₹</td>
+              <td class="c"><span id="outTotalAmt"></span> /-</td>
+            </tr>
+            <tr>
+              <td colspan="4" class="c" style="text-transform: capitalize">
+                <b>Total Rupees <span id="outTotalText"></span> only</b>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div id="uniform-cert-section">
+          <p
+            contenteditable="true"
+            style="text-indent: 40px; text-align: justify; line-height: 1.3"
+          >
+            Certified that undertaking as per ref. 2 has been obtained from
+            above employees and filed in this office. Also certified that 12
+            months completed from the date of sanctioning the
+            <span class="allowance-text"></span> in the previous financial year,
+            and the allowance has not paid in this financial year (<span
+              class="currentFY"
+            ></span
+            >) as per ref. 3.
+          </p>
+        </div>
+
+        <p
+          contenteditable="true"
+          style="text-indent: 40px; text-align: justify; line-height: 1.3"
+        >
+          Sanction is here by accorded for the drawl of the same from the Sub
+          Treasury <span id="outTreasury"></span>, from the Head of Account
+          <span id="outHoA"></span>.
+        </p>
+
+        <div class="pdf-footer">
+          <div class="footer-left">
+            <img
+              id="outOfficeSeal"
+              class="office-seal-img"
+              src=""
+              alt="Office Seal"
+              style="max-width: 150px"
+            />
+          </div>
+
+          <div class="footer-right" style="text-align: right; width: 300px">
+            <img
+              id="outSig"
+              class="uploaded-img"
+              src=""
+              alt="Signature"
+              style="max-width: 150px; margin-bottom: 5px"
+            /><br />
+            <b><span id="outDdoNameCopy"></span></b><br />
+            PEN <span id="outDdoPenCopy"></span><br />
+            <span id="outDdoDesigCopy"></span><br />
+            <span id="outInstNameCopy"></span><br />
+            <img
+              id="outDesigSeal"
+              class="uploaded-img"
+              src=""
+              alt="Designation Seal"
+              style="max-width: 150px; margin-top: 5px"
+            />
+          </div>
+        </div>
+      </div>
+      <button class="btn-print" onclick="generatePDF()">PRINT PDF</button>
+    </div>
+
+    <script>
+      function updateAllowanceText(val) {
+        const elements = document.getElementsByClassName("allowance-text");
+        for (let el of elements) {
+          el.innerText = val;
+        }
+
+        const certSection = document.getElementById("uniform-cert-section");
+        const pageRefText = document.getElementById("page-ref-text");
+        const refContainer = document.getElementById("reference-inputs");
+
+        // Clear existing reference inputs
+        refContainer.innerHTML = "";
+
+        if (val === "Uniform Allowance(13)") {
+          certSection.style.display = "block";
+          pageRefText.style.display = "inline";
+          addRefInput("GO (P) No. 27/2021/Fin dt: 10/02/2021");
+          addRefInput("Cir No. 38/2017/Fin dt: 23/05/2017");
+          addRefInput("Cir No. 10/2024/Fin dt: 13/02/2024");
+        } else {
+          certSection.style.display = "none";
+          pageRefText.style.display = "none";
+          addRefInput("GO (P) No. 27/2021/Fin dt: 10/02/2021");
+        }
+
+        populateTable();
+      }
+
+      function addRefInput(val = "") {
+        const container = document.getElementById("reference-inputs");
+        const newRow = document.createElement("div");
+        newRow.className = "in-row";
+        newRow.innerHTML = `
+            <div class="in-group">
+                <input type="text" class="ref-text" oninput="populateTable()" placeholder="Enter Reference (e.g. GO (P) No. 27/2021/Fin)" value="${val}">
+            </div>
+            <button class="btn-remove" onclick="removeRefRow(this)">X</button>
+        `;
+        container.appendChild(newRow);
+      }
+
+      function removeRefRow(btn) {
+        btn.parentElement.remove();
+        populateTable();
+      }
+
+      function numberToWords(num) {
+        var a = [
+          "",
+          "one ",
+          "two ",
+          "three ",
+          "four ",
+          "five ",
+          "six ",
+          "seven ",
+          "eight ",
+          "nine ",
+          "ten ",
+          "eleven ",
+          "twelve ",
+          "thirteen ",
+          "fourteen ",
+          "fifteen ",
+          "sixteen ",
+          "seventeen ",
+          "eighteen ",
+          "nineteen ",
+        ];
+        var b = [
+          "",
+          "",
+          "twenty",
+          "thirty",
+          "forty",
+          "fifty",
+          "sixty",
+          "seventy",
+          "eighty",
+          "ninety",
+        ];
+        var n = ("000000000" + num)
+          .substr(-9)
+          .match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+        if (!n) return "";
+        var str = "";
+        str +=
+          n[1] != 0
+            ? (a[Number(n[1])] || b[n[1][0]] + " " + a[n[1][1]]) + "crore "
+            : "";
+        str +=
+          n[2] != 0
+            ? (a[Number(n[2])] || b[n[2][0]] + " " + a[n[2][1]]) + "lakh "
+            : "";
+        str +=
+          n[3] != 0
+            ? (a[Number(n[3])] || b[n[3][0]] + " " + a[n[3][1]]) + "thousand "
+            : "";
+        str +=
+          n[4] != 0
+            ? (a[Number(n[4])] || b[n[4][0]] + " " + a[n[4][1]]) + "hundred "
+            : "";
+        str +=
+          n[5] != 0 ? a[Number(n[5])] || b[n[5][0]] + " " + a[n[5][1]] : "";
+        return str.trim();
+      }
+
+      function getFinancialYear() {
+        const today = new Date();
+        const month = today.getMonth() + 1;
+        const year = today.getFullYear();
+        return month >= 4
+          ? `${year}-${(year + 1).toString().slice(-2)}`
+          : `${year - 1}-${year.toString().slice(-2)}`;
+      }
+
+      function updatePDF(targetId) {
+        let val = event.target.value;
+        let targetEl = document.getElementById(targetId);
+        if (targetEl) targetEl.innerText = val;
+        if (targetId === "outDdoName")
+          document.getElementById("outDdoNameCopy").innerText = val;
+        if (targetId === "outDdoPen")
+          document.getElementById("outDdoPenCopy").innerText = val;
+        if (targetId === "outInstName")
+          document.getElementById("outInstNameCopy").innerText = val;
+        if (targetId === "outDdoDesig") {
+          document.getElementById("outDdoDesigCopy").innerText = val;
+          document.getElementById("outHeaderDesig").innerText = val;
+        }
+      }
+
+      function loadImg(event, targetId) {
+        var reader = new FileReader();
+        reader.onload = function () {
+          var output = document.getElementById(targetId);
+          output.src = reader.result;
+          output.style.display = "block";
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+
+      function addEmployeeInput() {
+        const container = document.getElementById("employee-inputs");
+        const newRow = document.createElement("div");
+        newRow.className = "in-row";
+        newRow.innerHTML = `
+            <div class="in-group"><input type="text" class="e-name" oninput="populateTable()" placeholder="Name & Pen"></div>
+            <div class="in-group"><input type="text" class="e-desig" oninput="populateTable()" placeholder="Designation"></div>
+            <div class="in-group"><input type="number" class="e-amt" oninput="populateTable()" placeholder="Amount"></div>
+            <button class="btn-remove" onclick="removeEmployeeRow(this)">X</button>
+        `;
+        container.appendChild(newRow);
+      }
+
+      function removeEmployeeRow(btn) {
+        btn.parentElement.remove();
+        populateTable();
+      }
+
+      // Merged populateTable function
+      function populateTable() {
+        // 1. Handle Employee Table and Totals
+        const names = document.getElementsByClassName("e-name");
+        const desigs = document.getElementsByClassName("e-desig");
+        const amts = document.getElementsByClassName("e-amt");
+        const tableBody = document.getElementById("pdfTableBody");
+        tableBody.innerHTML = "";
+        let total = 0;
+
+        for (let i = 0; i < names.length; i++) {
+          if (names[i].value.trim() !== "") {
+            let amtVal = parseFloat(amts[i].value) || 0;
+            total += amtVal;
+            tableBody.innerHTML += `<tr><td class="c">${i + 1}.</td><td>${names[i].value}</td><td>${desigs[i].value}</td><td class="c">${amtVal}/-</td></tr>`;
+          }
+        }
+        document.getElementById("outTotalAmt").innerText = total;
+        document.getElementById("outTotalText").innerText =
+          total > 0 ? numberToWords(total) : "Zero";
+
+        // 2. Handle Reference Details
+        const refInputs = document.querySelectorAll(".ref-text");
+        let refHTML = "";
+        let refIndex = 1;
+        refInputs.forEach((input) => {
+          if (input.value.trim() !== "") {
+            refHTML += `${refIndex}. ${input.value}<br>`;
+            refIndex++;
+          }
+        });
+
+        document.getElementById("ref-list-content").innerHTML = refHTML;
+      }
+
+      function generatePDF() {
+        populateTable();
+        const element = document.getElementById("printable-area");
+        const opt = {
+          margin: [0, 0, 0, 0],
+          filename: "SPARK_Document.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, scrollY: 0 },
+          jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] },
+        };
+        html2pdf().set(opt).from(element).save();
+        incrementCounter();
+      }
+      // പേജ് ലോഡ് ആകുമ്പോൾ സേവ് ചെയ്ത റഫറൻസുകൾ കാണിക്കാൻ
+      document.addEventListener("DOMContentLoaded", () => {
+        displayReferences();
+      });
+
+      // റഫറൻസുകൾ സേവ് ചെയ്യാനും കാണിക്കാനും ഉള്ള ഫംഗ്ഷൻ
+      function addReference() {
+        const refInput = document.getElementById("reference-input"); // നിങ്ങളുടെ ഇൻപുട്ട് ഐഡി
+        const refValue = refInput.value.trim();
+
+        if (refValue === "") {
+          alert("ദയവായി ഒരു റഫറൻസ് ടൈപ്പ് ചെയ്യുക!");
+          return;
+        }
+
+        let savedRefs = JSON.parse(localStorage.getItem("myReferences")) || [];
+        savedRefs.push(refValue);
+        localStorage.setItem("myReferences", JSON.stringify(savedRefs));
+
+        refInput.value = ""; // ഇൻപുട്ട് ക്ലിയർ ചെയ്യാൻ
+        displayReferences();
+      }
+
+      function displayReferences() {
+        const refListContent = document.getElementById("ref-list-content");
+        let savedRefs = JSON.parse(localStorage.getItem("myReferences")) || [];
+
+        refListContent.innerHTML = ""; // പഴയ ലിസ്റ്റ് ക്ലിയർ ചെയ്യാൻ
+
+        savedRefs.forEach((ref, index) => {
+          const div = document.createElement("div");
+          div.className = "ref-item"; // സ്റ്റൈലിംഗിനായി
+          div.style.display = "flex";
+          div.style.marginBottom = "10px";
+          div.style.gap = "10px";
+
+          div.innerHTML = `
+            <input type="text" value="${ref}" id="ref-${index}" class="form-control" readonly>
+            <button onclick="editRef(${index})" id="edit-btn-${index}" class="btn btn-primary">Edit</button>
+            <button onclick="deleteRef(${index})" class="btn btn-danger">X</button>
+        `;
+          refListContent.appendChild(div);
+        });
+      }
+
+      // എഡിറ്റ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+      function editRef(index) {
+        const input = document.getElementById(`ref-${index}`);
+        const editBtn = document.getElementById(`edit-btn-${index}`);
+
+        if (editBtn.innerText === "Edit") {
+          input.readOnly = false;
+          input.focus();
+          editBtn.innerText = "Save";
+          editBtn.className = "btn btn-success";
+        } else {
+          let savedRefs = JSON.parse(localStorage.getItem("myReferences"));
+          savedRefs[index] = input.value;
+          localStorage.setItem("myReferences", JSON.stringify(savedRefs));
+
+          input.readOnly = true;
+          editBtn.innerText = "Edit";
+          editBtn.className = "btn btn-primary";
+          displayReferences(); // ലിസ്റ്റ് പുതുക്കാൻ
+        }
+      }
+
+      // ഡിലീറ്റ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+      function deleteRef(index) {
+        let savedRefs = JSON.parse(localStorage.getItem("myReferences"));
+        savedRefs.splice(index, 1);
+        localStorage.setItem("myReferences", JSON.stringify(savedRefs));
+        displayReferences();
+      }
+      window.onload = function () {
+        const fy = getFinancialYear();
+        const fyElements = document.getElementsByClassName("currentFY");
+        for (let el of fyElements) el.innerText = fy;
+        {
+          getInitialCount;
+        }
+
+        // This sets up initial refs and triggers populateTable automatically
+        updateAllowanceText(document.getElementById("inAllowanceType").value);
+      };
+      // 1. ഡ്രാഫ്റ്റ് സേവ് ചെയ്യാനുള്ള പുതിയ ഫംഗ്ഷൻ (ടേബിൾ സപ്പോർട്ട് ഉൾപ്പെടെ)
+      function saveDraft() {
+        const printableArea = document.getElementById("printable-area");
+
+        // പ്രധാന ട്രിക്ക്: വലതുവശത്തെ ടേബിളിൽ ടൈപ്പ് ചെയ്ത കാര്യങ്ങൾ HTML-ൽ ഉറപ്പിച്ചു നിർത്താൻ
+        printableArea
+          .querySelectorAll("input")
+          .forEach((el) => el.setAttribute("value", el.value));
+        printableArea
+          .querySelectorAll("textarea")
+          .forEach((el) => (el.innerHTML = el.value));
+        printableArea.querySelectorAll("select").forEach((el) => {
+          Array.from(el.options).forEach((opt) => {
+            if (opt.value === el.value)
+              opt.setAttribute("selected", "selected");
+            else opt.removeAttribute("selected");
+          });
+        });
+
+        const certContent = printableArea.innerHTML;
+
+        // ഇടതുവശത്തെ എല്ലാ ഇൻപുട്ടുകളും എടുക്കുന്നു (ID ഇല്ലാത്തവയും ഇതിൽ വരും)
+        const inputs = document.querySelectorAll("input, textarea, select");
+        let inputValues = {};
+
+        inputs.forEach((input, index) => {
+          if (input.type !== "file") {
+            // ഫയലുകൾ സേവ് ചെയ്യാൻ പാടില്ല
+            // ID ഇല്ലെങ്കിൽ ബോക്സിന്റെ സ്ഥാനം (index) വെച്ച് സേവ് ചെയ്യും
+            const key = input.id ? input.id : "item_" + index;
+            inputValues[key] = input.value;
+          }
+        });
+
+        const draftData = {
+          html: certContent,
+          inputs: inputValues,
+        };
+
+        localStorage.setItem("myCertDraft", JSON.stringify(draftData));
+        alert("ടേബിൾ ഉൾപ്പെടെ ഡ്രാഫ്റ്റ് വിജയകരമായി സേവ് ചെയ്തു! 💾");
+      }
+
+      // 2. സേവ് ചെയ്ത ഡ്രാഫ്റ്റ് തിരികെ എടുക്കാൻ
+      function loadDraft() {
+        const savedData = localStorage.getItem("myCertDraft");
+
+        if (savedData) {
+          const draft = JSON.parse(savedData);
+
+          // വലതുവശത്തെ സർട്ടിഫിക്കറ്റും ടേബിളും തിരികെ വെക്കുന്നു
+          if (draft.html) {
+            document.getElementById("printable-area").innerHTML = draft.html;
+          }
+
+          // ഇടതുവശത്തെ ഇൻപുട്ട് ബോക്സുകളിലേക്ക് ഡാറ്റ തിരികെ വെക്കുന്നു
+          if (draft.inputs) {
+            const inputs = document.querySelectorAll("input, textarea, select");
+            inputs.forEach((input, index) => {
+              if (input.type !== "file") {
+                const key = input.id ? input.id : "item_" + index;
+                if (draft.inputs[key] !== undefined) {
+                  input.value = draft.inputs[key];
+                  // ഡാറ്റ തനിയെ വലത്തേക്ക് അപ്ഡേറ്റ് ആകാൻ
+                  input.dispatchEvent(new Event("input"));
+                  input.dispatchEvent(new Event("change"));
+                }
+              }
+            });
+          }
+
+          alert("ടേബിൾ ഉൾപ്പെടെ പഴയ ഡ്രാഫ്റ്റ് ലോഡ് ചെയ്തു! 📄");
+        } else {
+          alert("സേവ് ചെയ്ത ഡ്രാഫ്റ്റുകൾ ഒന്നുമില്ല!");
+        }
+      }
+
+      // 3. ഡ്രാഫ്റ്റ് ക്ലിയർ ചെയ്യാൻ
+      function clearDraft() {
+        if (confirm("സേവ് ചെയ്ത ഡ്രാഫ്റ്റ് പൂർണ്ണമായും ഡിലീറ്റ് ചെയ്യണോ?")) {
+          localStorage.removeItem("myCertDraft");
+          alert("ഡ്രാഫ്റ്റ് ക്ലിയർ ചെയ്തു!");
+          location.reload();
+        }
+      }
+
+      // 4. പേജ് ലോഡ് ആകുമ്പോൾ തന്നെ ഇടതുവശത്തെ ഡാറ്റ വലത്തേക്ക് കൊണ്ടുവരാൻ
+      window.addEventListener("load", function () {
+        const allInputs = document.querySelectorAll(
+          "input[oninput], textarea[oninput], select[onchange]",
+        );
+        allInputs.forEach((input) => {
+          input.dispatchEvent(new Event("input"));
+          input.dispatchEvent(new Event("change"));
+        });
+      });
+      const counterNamespace = "pro-sumeshtk";
+      const counterKey = "total-calculations";
+
+      function getInitialCount() {
+        fetch(`https://api.counterapi.dev/v1/${counterNamespace}/${counterKey}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.count && data.count > 0) {
+              document.getElementById("countDisplay").innerText = data.count;
+              document.getElementById("counterContainer").style.display =
+                "block";
+            }
+          })
+          .catch((error) => {
+            console.log("Counter blocked by browser or ad-blocker.");
+          });
+      }
+
+      function incrementCounter() {
+        fetch(
+          `https://api.counterapi.dev/v1/${counterNamespace}/${counterKey}/up`,
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.count) {
+              document.getElementById("countDisplay").innerText = data.count;
+              document.getElementById("counterContainer").style.display =
+                "block";
+            }
+          })
+          .catch((error) => console.log("Counter increment failed."));
+      }
+    </script>
+  </body>
+
+</html>
