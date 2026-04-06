@@ -1,4 +1,4 @@
-const cacheName = 'office-proceedings-v4';
+const cacheName = 'office-proceedings-v5';
 const assets = [
   './',
   './index.html',
