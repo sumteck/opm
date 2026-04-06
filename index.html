@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Office Proceedings Generator</title>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#87CEEB">
+<link rel="apple-touch-icon" href="logo192.png">
+
+<script>
+  // Service Worker രജിസ്റ്റർ ചെയ്യുന്നു (ഇൻസ്റ്റാൾ ചെയ്യാൻ ഇത് നിർബന്ധമാണ്)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js');
+    });
+  }
+</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
       body {
