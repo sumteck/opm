@@ -1,301 +1,585 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <!-- Primary Meta Tags -->
-<title>Office Proceedings Maker - ഡിജിറ്റൽ ഓഫീസ് സഹായി</title>
-<meta name="title" content="Office Proceedings Maker - ഡിജിറ്റൽ ഓഫീസ് സഹായി">
-<meta name="description" content="ഓഫീസ് നടപടിക്രമങ്ങൾ ലളിതമായി വേഗത്തിൽ തയ്യാറാക്കാൻ ഈ ആപ്പ് ഉപയോഗിക്കൂ. ഫ്രീയായി ഡൗൺലോഡ് ചെയ്യാം!">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Office Proceedings Maker</title>
 
-<!-- Open Graph / Facebook / WhatsApp -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://sumteck.github.io/opm/"> <!-- നിങ്ങളുടെ ലിങ്ക് ഇവിടെ നൽകുക -->
-<meta property="og:title" content="Office Proceedings Maker">
-<meta property="og:description" content="ഓഫീസ് ജോലികൾ ഇനി എളുപ്പമാക്കാം. പ്രൊസീഡിങ്‌സ് തയ്യാറാക്കാൻ ഇതാ ഒരു സ്മാർട്ട് വഴി!">
-<meta property="og:image" content="https://sumteck.github.io/opm/logo512.png"> <!-- ലോഗോയുടെ ഫുൾ ലിങ്ക് നൽകുക -->
+  <!-- Meta Tags -->
+  <meta name="title" content="Office Proceedings Maker - ഡിജിറ്റൽ ഓഫീസ് സഹായി">
+  <meta name="description" content="ഓഫീസ് നടപടിക്രമങ്ങൾ ലളിതമായി വേഗത്തിൽ തയ്യാറാക്കാൻ ഈ ആപ്പ് ഉപയോഗിക്കൂ.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Office Proceedings Maker">
+  <meta property="og:description" content="ഓഫീസ് ജോലികൾ ഇനി എളുപ്പമാക്കാം.">
+  <meta property="og:image" content="https://sumteck.github.io/opm/logo512.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a1f44">
+  <link rel="apple-touch-icon" href="logo192.png">
 
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="Office Proceedings Maker">
-<meta property="twitter:description" content="ഓഫീസ് നടപടിക്രമങ്ങൾ തയ്യാറാക്കാൻ സഹായിക്കുന്ന മികച്ച വെബ് ആപ്പ്.">
-<meta property="twitter:image" content="https://sumteck.github.io/opm/logo512.png">
-    <title>Office Proceedings Generator</title>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#87CEEB">
-<link rel="apple-touch-icon" href="logo192.png">
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+    }
+  </script>
+
+  <style>
+    /* ════════════════════════════════════════
+       WELCOME SCREEN STYLES
+    ════════════════════════════════════════ */
+    :root {
+      --bg-start: #0a1f44;
+      --bg-mid:   #0e4d7a;
+      --bg-end:   #1a8a8a;
+      --accent:   #1565c0;
+      --accent2:  #0288d1;
+      --btn-start:#1565c0;
+      --btn-end:  #0288d1;
+      --shadow:   0 32px 80px rgba(0,0,0,0.32), 0 8px 24px rgba(0,0,0,0.18);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Welcome wrapper ── */
+    #welcome-screen {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+      font-family: 'DM Sans', sans-serif;
+      padding: 24px 16px 40px;
+      position: relative;
+      overflow-x: hidden;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    #welcome-screen.fade-out {
+      opacity: 0;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    /* Ambient blobs */
+    #welcome-screen::before, #welcome-screen::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    #welcome-screen::before {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, #38bdf8, transparent 70%);
+      top: -160px; left: -160px;
+    }
+    #welcome-screen::after {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, #22d3ee, transparent 70%);
+      bottom: -100px; right: -120px;
+    }
+
+    /* ── Card ── */
+    .welcome-card {
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 48px 44px 44px;
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+      animation: bounceIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+      position: relative;
+      overflow: hidden;
+    }
+    .welcome-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--btn-start), var(--btn-end), #26c6da);
+      border-radius: 28px 28px 0 0;
+    }
+
+    @keyframes bounceIn {
+      0%   { opacity: 0; transform: scale(0.75) translateY(30px); }
+      55%  { opacity: 1; transform: scale(1.04) translateY(-6px); }
+      75%  { transform: scale(0.97) translateY(3px); }
+      90%  { transform: scale(1.01) translateY(-2px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Logo ── */
+    .logo-wrapper {
+      width: 150px; height: 150px;
+      margin: 0 auto 28px;
+      border-radius: 0%;
+      padding: 4px;
+      background: linear-gradient(135deg, var(--btn-start), var(--btn-end));
+      box-shadow: 0 8px 28px rgba(21,101,192,0.28);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease;
+      cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-wrapper:hover {
+      transform: scale(1.1) rotate(-3deg);
+      box-shadow: 0 14px 40px rgba(234, 238, 243, 0.44);
+    }
+    .logo-inner {
+      width: 100%; height: 100%;
+      border-radius: 0%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .logo-inner img {
+      width: 88%;
+      height: 88%;
+      object-fit: contain;
+      display: block;
+    }
+    .logo-svg {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--accent);
+    }
+
+    /* ── Typography ── */
+    .welcome-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 5px;
+      color: #18ec05;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .welcome-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #0879f1;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .welcome-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 48px; height: 3px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--btn-start), var(--btn-end));
+      margin: 0 auto 24px;
+    }
+
+    /* ── Visit Badge ── */
+    .visit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid rgba(21,101,192,0.22);
+      border-radius: 99px;
+      padding: 7px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(229, 19, 19, 0.06);
+      margin-bottom: 32px;
+    }
+    .visit-badge .live-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #df0808;
+      box-shadow: 0 0 0 3px rgb(236, 30, 3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.22); }
+      50%      { box-shadow: 0 0 0 7px rgba(34,197,94,0.06); }
+    }
+    #visitCount { color: var(--accent2); font-weight: 700; }
+
+    /* ── START Button ── */
+    .btn-start {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 17px 28px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(120deg, var(--btn-start) 0%, var(--btn-end) 100%);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(21,101,192,0.38);
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-start::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.13), transparent);
+    }
+    .btn-start:hover {
+      transform: translateY(-4px) scale(1.015);
+      box-shadow: 0 14px 38px rgba(21,101,192,0.48);
+    }
+    .btn-start:active { transform: translateY(-1px); }
+
+    /* ── Contact Pills ── */
+    .contacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+      animation: bounceIn 1s 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      border-radius: 99px;
+      border: 1.5px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: #e0f2fe;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, border-color 0.3s ease,
+                  transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.3s ease, color 0.3s ease;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .contact-btn:hover {
+      background: #25d366;
+      border-color: #1ebe59;
+      color: #fff;
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 10px 28px rgba(37,211,102,0.45);
+    }
+    .contact-btn:hover .avatar { box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
+    .contact-btn:hover .wa-icon { color: #fff; opacity: 1; }
+    .wa-icon { font-size: 15px; color: #4ade80; opacity: 0.85; transition: color 0.3s, opacity 0.3s; }
+
+    /* ── Responsive welcome ── */
+    @media (max-width: 500px) {
+      .welcome-card { padding: 38px 24px 34px; }
+      .welcome-title { font-size: 22px; }
+      .contacts { flex-direction: column; align-items: center; }
+    }
+
+    /* ════════════════════════════════════════
+       MAIN APP STYLES
+    ════════════════════════════════════════ */
+    #main-app {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #main-app.visible {
+      display: flex;
+      opacity: 0;
+      animation: fadeInApp 0.5s 0.05s ease forwards;
+    }
+    @keyframes fadeInApp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Original main app body styles (scoped inside #main-app) */
+    #main-app {
+      font-family: sans-serif;
+      background-color: #84b7e4;
+      width: 100%;
+      min-height: 100vh;
+      padding: 20px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #main-app .input-panel {
+      flex: 0 0 45%;
+      min-width: 320px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    #main-app .fieldset {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    #main-app .in-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    #main-app .in-group {
+      flex: 1;
+      min-width: 150px;
+    }
+    #main-app label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 3px;
+      font-weight: bold;
+      color: #666;
+    }
+    #main-app input[type="text"],
+    #main-app input[type="number"],
+    #main-app select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    #main-app .btn-add {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+    #main-app .preview-panel {
+      flex: 1;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #printable-area {
+      width: 210mm;
+      min-height: auto;
+      padding: 20mm 20mm 5px 20mm;
+      background: white;
+      box-sizing: border-box;
+      font-family: "Times New Roman", Times, serif;
+      line-height: 1.5;
+      color: black;
+      position: relative;
+    }
+    .pdf-header { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 20px; }
+    .pdf-header p { margin: 0; }
+    .ref-section { display: flex; margin-bottom: 15px; }
+    .ref-label { font-weight: bold; width: 60px; flex-shrink: 0; }
+    .ref-list { flex-grow: 1; margin-left: 10px; }
+    .order-meta {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      border-top: 2px solid rgb(7,3,3);
+      border-bottom: 2px solid black;
+      padding: 5px 0;
+      margin: 15px 0;
+    }
+    table.receipt-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    table.receipt-table th, table.receipt-table td { border: 1px solid black; padding: 8px; text-align: left; font-size: 14px; }
+    .c { text-align: center !important; }
+    .r { text-align: right !important; }
+    .pdf-footer {
+      margin-top: 50px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-size: 14px;
+      position: relative;
+      z-index: 2;
+      clear: both;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .uploaded-img { max-width: 150px; max-height: 80px; display: none; margin: 5px 0 5px auto; }
+    .office-seal-img { max-width: 150px; max-height: 80px; display: none; margin: 5px auto 5px 0; }
+    .upload-stack { display: flex; flex-direction: column; gap: 12px; padding: 5px 0; }
+    .upload-row { display: flex; align-items: center; }
+    .upload-row label { width: 120px; font-weight: 500; color: #333; }
+    .btn-print {
+      background: #28a745;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    table tr { page-break-inside: avoid; break-inside: avoid; }
+    table { page-break-inside: auto; }
+    .btn-remove {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 5px;
+      height: 35px;
+      align-self: flex-end;
+    }
+    .btn-remove:hover { background: #cc0000; }
+    [contenteditable="true"]:hover { outline: 1px dashed #007bff; background-color: #f8fbff; cursor: text; }
+    @media print {
+      [contenteditable="true"] { outline: none !important; background-color: transparent !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;">
+
+  <!-- ════════════════════════════════════════
+       WELCOME SCREEN
+  ════════════════════════════════════════ -->
+  <div id="welcome-screen">
+
+    <div class="welcome-card">
+      <div class="logo-wrapper">
+        <div class="logo-inner">
+          <img src="https://sumteck.github.io/opm/logo512.png" alt="Office Proceedings Maker Logo" />
+        </div>
+      </div>
+
+      <p class="welcome-label">Welcome</p>
+      <h1 class="welcome-title">Office Proceedings Maker</h1>
+      <p class="welcome-subtitle"></p>
+
+      <div class="divider"></div>
+
+      <div class="visitor-counter-card">
+    <h3>👁️Total Visits <div id="count-value"></div>                    </h3>
+    
+</div>
+
+<style>
+    .visitor-counter-card {
+        background-color: #e0f2fe; /* Sky Blue പശ്ചാത്തലം */
+        border: 2px solid #7dd3fc;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        max-width: 200px;
+        margin: 10px auto;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .visitor-counter-card h3 {
+        margin: 0;
+        font-size: 14px;
+        color: #0369a1;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    #count-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #0c4a6e;
+        margin-top: 5px;
+    }
+</style>
 
 <script>
-  // Service Worker രജിസ്റ്റർ ചെയ്യുന്നു (ഇൻസ്റ്റാൾ ചെയ്യാൻ ഇത് നിർബന്ധമാണ്)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js');
-    });
-  }
+    // നിങ്ങളുടെ വർക്കറിൽ നിന്ന് ഡാറ്റ എടുക്കുന്നു
+    fetch('https://sumteck.tksumesh85.workers.dev?site=opm')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('count-value').innerText = data.views;
+        })
+        .catch(err => {
+            document.getElementById('count-value').innerText = "0";
+            console.error("Error loading counter", err);
+        });
 </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-      body {
-        font-family: sans-serif;
-        background-color: #84b7e4;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        gap: 20px;
-      }
-      .input-panel {
-        flex: 1;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      .fieldset {
-        border: 1px solid #ddd;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-      }
-      .in-row {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-      }
-      .in-group {
-        flex: 1;
-        min-width: 150px;
-      }
-      label {
-        display: block;
-        font-size: 13px;
-        margin-bottom: 3px;
-        font-weight: bold;
-        color: #666;
-      }
-      input[type="text"],
-      input[type="number"],
-      select {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-      .btn-add {
-        background: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 5px;
-        font-weight: bold;
-      }
 
-      .preview-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      #printable-area {
-        width: 210mm;
-        min-height: auto;
-        padding: 20mm 20mm 5px 20mm;
-        background: white;
-        box-shadow: none;
-        box-sizing: border-box;
-        font-family: "Times New Roman", Times, serif;
-        line-height: 1.5;
-        color: black;
-        position: relative;
-      }
-      .pdf-header {
-        text-align: center;
-        font-weight: bold;
-        text-transform: uppercase;
-        margin-bottom: 20px;
-      }
-      .pdf-header p {
-        margin: 0;
-      }
-      .ref-section {
-        display: flex;
-        margin-bottom: 15px;
-      }
-      .ref-label {
-        font-weight: bold;
-        width: 60px;
-        flex-shrink: 0;
-      }
-      .ref-list {
-        flex-grow: 1;
-        margin-left: 10px;
-      }
-      .order-meta {
-        display: flex;
-        justify-content: space-between;
-        font-weight: bold;
-        border-top: 2px solid rgb(7, 3, 3);
-        border-bottom: 2px solid black;
-        padding: 5px 0;
-        margin: 15px 0;
-      }
-      table.receipt-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-      }
-      table.receipt-table th,
-      table.receipt-table td {
-        border: 1px solid black;
-        padding: 8px;
-        text-align: left;
-        font-size: 14px;
-      }
-      .c {
-        text-align: center !important;
-      }
-      .r {
-        text-align: right !important;
-      }
-      .pdf-footer {
-        margin-top: 50px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        font-size: 14px;
-        position: relative;
-        z-index: 2;
-        clear: both;
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      .uploaded-img {
-        max-width: 150px;
-        max-height: 80px;
-        display: block;
-        margin: 5px 0 5px auto;
-        display: none;
-      }
-      .office-seal-img {
-        max-width: 150px;
-        max-height: 80px;
-        display: block;
-        margin: 5px auto 5px 0;
-        display: none;
-      }
-      .upload-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 5px 0;
-      }
-      .upload-row {
-        display: flex;
-        align-items: center;
-      }
-      .upload-row label {
-        width: 120px;
-        font-weight: 500;
-        color: #333;
-      }
-      .btn-print {
-        background: #28a745;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        margin-top: 15px;
-        font-weight: bold;
-      }
-      table tr {
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      table {
-        page-break-inside: auto;
-      }
-      .btn-remove {
-        background: #ff4d4d;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 5px 10px;
-        cursor: pointer;
-        font-weight: bold;
-        margin-left: 5px;
-        height: 35px;
-        align-self: flex-end;
-      }
-      .btn-remove:hover {
-        background: #cc0000;
-      }
-      /* എഡിറ്റ് ചെയ്യാവുന്ന ഭാഗങ്ങളിൽ മൗസ് വരുമ്പോൾ */
-      [contenteditable="true"]:hover {
-        outline: 1px dashed #007bff;
-        background-color: #f8fbff; /* ഒരു നേരിയ നീല നിറം */
-        cursor: text;
-      }
+      <button class="btn-start" onclick="launchApp()">
+        <i class="fa-solid fa-play" style="font-size:14px;"></i>
+        START
+      </button>
+    </div>
 
-      /* PDF എടുക്കുമ്പോൾ ഈ ബോർഡറും നിറവും കാണാതിരിക്കാൻ (നിങ്ങൾ html2pdf ഉപയോഗിക്കുന്നതുകൊണ്ട് ഇത് കൊടുക്കുന്നത് നല്ലതാണ്) */
-      @media print {
-        [contenteditable="true"] {
-          outline: none !important;
-          background-color: transparent !important;
-        }
-      }
-    </style>
-  </head>
-  <body>
+    <!-- Contact Pills -->
+    <div class="contacts">
+      <a href="https://wa.me/919447596675" class="contact-btn" target="_blank" rel="noopener">
+        Sumesh T K
+        <i class="fa-brands fa-whatsapp wa-icon"></i>
+      </a>
+      <a href="https://wa.me/917025081081" class="contact-btn" target="_blank" rel="noopener">
+        Ramakrishnan K
+        <i class="fa-brands fa-whatsapp wa-icon"></i>
+      </a>
+      <a href="https://wa.me/919946479273" class="contact-btn" target="_blank" rel="noopener">
+        Pratheesh M P
+        <i class="fa-brands fa-whatsapp wa-icon"></i>
+      </a>
+    </div>
+
+  </div><!-- /#welcome-screen -->
+
+
+  <!-- ════════════════════════════════════════
+       MAIN APP (hidden initially)
+  ════════════════════════════════════════ -->
+  <div id="main-app">
+
     <div class="input-panel">
       <h3>1. Institution Details</h3>
       <div class="fieldset">
-        <label>Name of Institution & Place</label>
-        <input
-          type="text"
-          id="inInstName"
-          value=""
-          placeholder="Name of Institution & Place "
-          oninput="updatePDF('outInstName')"
-        />
-        <div class="in-row" style="margin-top: 10px">
+        <label>Name of Institution &amp; Place</label>
+        <input type="text" id="inInstName" value="" placeholder="Name of Institution &amp; Place" oninput="updatePDF('outInstName')" />
+        <div class="in-row" style="margin-top:10px">
           <div class="in-group">
             <label>DDO Name</label>
-            <input
-              type="text"
-              id="inDdoName"
-              value=""
-              placeholder="DDO Name"
-              oninput="updatePDF('outDdoName')"
-            />
+            <input type="text" id="inDdoName" value="" placeholder="DDO Name" oninput="updatePDF('outDdoName')" />
           </div>
           <div class="in-group">
             <label>PEN</label>
-            <input
-              type="text"
-              id="inDdoPen"
-              value=""
-              placeholder="123456 "
-              oninput="updatePDF('outDdoPen')"
-            />
+            <input type="text" id="inDdoPen" value="" placeholder="123456" oninput="updatePDF('outDdoPen')" />
           </div>
           <div class="in-group">
             <label>Designation</label>
-            <input
-              type="text"
-              id="inDdoDesig"
-              value=""
-              placeholder="Designation "
-              oninput="updatePDF('outDdoDesig')"
-            />
+            <input type="text" id="inDdoDesig" value="" placeholder="Designation" oninput="updatePDF('outDdoDesig')" />
           </div>
         </div>
       </div>
@@ -305,23 +589,11 @@
         <div class="in-row">
           <div class="in-group">
             <label>Order No.</label>
-            <input
-              type="text"
-              id="inOrderNo"
-              value=""
-              placeholder="C-1233/2026 "
-              oninput="updatePDF('outOrderNo')"
-            />
+            <input type="text" id="inOrderNo" value="" placeholder="C-1233/2026" oninput="updatePDF('outOrderNo')" />
           </div>
           <div class="in-group">
             <label>Date</label>
-            <input
-              type="text"
-              id="inDate"
-              value=""
-              placeholder="dd/mm/yyyy "
-              oninput="updatePDF('outDate')"
-            />
+            <input type="text" id="inDate" value="" placeholder="dd/mm/yyyy" oninput="updatePDF('outDate')" />
           </div>
         </div>
       </div>
@@ -331,823 +603,497 @@
         <div id="employee-inputs">
           <div class="in-row">
             <div class="in-group">
-              <label>Name & Pen</label>
-              <input
-                type="text"
-                class="e-name"
-                value=""
-                placeholder=" Name & Pen"
-                oninput="populateTable()"
-              />
+              <label>Name &amp; Pen</label>
+              <input type="text" class="e-name" value="" placeholder="Name &amp; Pen" oninput="populateTable()" />
             </div>
             <div class="in-group">
               <label>Designation</label>
-              <input
-                type="text"
-                class="e-desig"
-                value=""
-                placeholder="Designation "
-                oninput="populateTable()"
-              />
+              <input type="text" class="e-desig" value="" placeholder="Designation" oninput="populateTable()" />
             </div>
             <div class="in-group">
               <label>Amount</label>
-              <input
-                type="number"
-                class="e-amt"
-                value=""
-                placeholder="10000 "
-                oninput="populateTable()"
-              />
+              <input type="number" class="e-amt" value="" placeholder="10000" oninput="populateTable()" />
             </div>
           </div>
         </div>
-        <button class="btn-add" onclick="addEmployeeInput()">
-          + Add More Employee
-        </button>
+        <button class="btn-add" onclick="addEmployeeInput()">+ Add More Employee</button>
       </div>
 
       <h3>4. Allowance Type</h3>
       <div class="fieldset">
         <label>Select Allowance</label>
         <select id="inAllowanceType" onchange="updateAllowanceText(this.value)">
-          <option value="Uniform Allowance(13)">
-            1. Uniform Allowance(13)
-          </option>
-          <option value="Foot Wear Allowance(16)">
-            2. Foot Wear Allowance(16)
-          </option>
-          <option value="Warm Clothing Allowance (19)">
-            3. Warm Clothing Allowance (19)
-          </option>
-          <option value="Conveyance Allowance(62)">
-            4. Conveyance Allowance(62)
-          </option>
-          <option value="Post mortem allowance(63)">
-            5. Post mortem allowance(63)
-          </option>
-          <option value="Day off Allowance(65)">
-            6. Day off Allowance(65)
-          </option>
-          <option value="Education allowance(84)">
-            7. Education allowance(84)
-          </option>
-          <option value="Permanent Conveyance Allowance(100)">
-            8. Permanent Conveyance Allowance(100)
-          </option>
-          <option value="Permanent Travelling Allowance(101)">
-            9. Permanent Travelling Allowance(101)
-          </option>
-          <option value="Periodical Allowance(129)">
-            10. Periodical Allowance(129)
-          </option>
+          <option value="Uniform Allowance(13)">1. Uniform Allowance(13)</option>
+          <option value="Foot Wear Allowance(16)">2. Foot Wear Allowance(16)</option>
+          <option value="Warm Clothing Allowance (19)">3. Warm Clothing Allowance (19)</option>
+          <option value="Conveyance Allowance(62)">4. Conveyance Allowance(62)</option>
+          <option value="Post mortem allowance(63)">5. Post mortem allowance(63)</option>
+          <option value="Day off Allowance(65)">6. Day off Allowance(65)</option>
+          <option value="Education allowance(84)">7. Education allowance(84)</option>
+          <option value="Permanent Conveyance Allowance(100)">8. Permanent Conveyance Allowance(100)</option>
+          <option value="Permanent Travelling Allowance(101)">9. Permanent Travelling Allowance(101)</option>
+          <option value="Periodical Allowance(129)">10. Periodical Allowance(129)</option>
           <option value="Notice Pay(132)">11. Notice Pay(132)</option>
           <option value="Rent Recovery">12. Rent Recovery</option>
           <option value="Daily Allowance">13. Daily Allowance</option>
-          <option value="Exgratia Allowance(136)">
-            14. Exgratia Allowance(136)
-          </option>
-          <option value="Luggage Allowance (13)">
-            15. Luggage Allowance (13)
-          </option>
-          <option value="Foot Wear Allowance (wages) (155)">
-            16. Foot Wear Allowance (wages) (155)
-          </option>
-          <option value="Police spl.Allowance Sabarimala Duty(168)">
-            17. Police spl.Allowance Sabarimala Duty(168)
-          </option>
-          <option value="Spl.Allowance Election Duty(169)">
-            18. Spl.Allowance Election Duty(169)
-          </option>
-          <option value="Uniform Allowance (Wages) (170)">
-            19. Uniform Allowance (Wages) (170)
-          </option>
-          <option value="Stitching Allowance (wages)(192)">
-            20. Stitching Allowance (wages)(192)
-          </option>
+          <option value="Exgratia Allowance(136)">14. Exgratia Allowance(136)</option>
+          <option value="Luggage Allowance (13)">15. Luggage Allowance (13)</option>
+          <option value="Foot Wear Allowance (wages) (155)">16. Foot Wear Allowance (wages) (155)</option>
+          <option value="Police spl.Allowance Sabarimala Duty(168)">17. Police spl.Allowance Sabarimala Duty(168)</option>
+          <option value="Spl.Allowance Election Duty(169)">18. Spl.Allowance Election Duty(169)</option>
+          <option value="Uniform Allowance (Wages) (170)">19. Uniform Allowance (Wages) (170)</option>
+          <option value="Stitching Allowance (wages)(192)">20. Stitching Allowance (wages)(192)</option>
           <option value="Shift Allowance(197)">21. Shift Allowance(197)</option>
-          <option value="Laptop Allowance(Judges)">
-            22. Laptop Allowance(Judges)
-          </option>
-          <option value="Refund of Onam Advance (202)">
-            23. Refund of Onam Advance (202)
-          </option>
-          <option value="Refund of Onam Advance Wages(204)">
-            24. Refund of Onam Advance Wages(204)
-          </option>
+          <option value="Laptop Allowance(Judges)">22. Laptop Allowance(Judges)</option>
+          <option value="Refund of Onam Advance (202)">23. Refund of Onam Advance (202)</option>
+          <option value="Refund of Onam Advance Wages(204)">24. Refund of Onam Advance Wages(204)</option>
           <option value="Robe allowance(128)">25. Robe allowance(128)</option>
-          <option value="Mobile Phone Purchase Allowance (207)">
-            26. Mobile Phone Purchase Allowance (207)
-          </option>
-          <option value="Home Orderly Allowance judiciary(209)">
-            27. Home Orderly Allowance judiciary(209)
-          </option>
-          <option value="Child Education Allowance Judiciary(210)">
-            28. Child Education Allowance Judiciary(210)
-          </option>
-          <option value="Transport Allowance Judiciary(211)">
-            29. Transport Allowance Judiciary(211)
-          </option>
-          <option value="Furniture and Ac Allowance Judiciary(212)">
-            30. Furniture and Ac Allowance Judiciary(212)
-          </option>
+          <option value="Mobile Phone Purchase Allowance (207)">26. Mobile Phone Purchase Allowance (207)</option>
+          <option value="Home Orderly Allowance judiciary(209)">27. Home Orderly Allowance judiciary(209)</option>
+          <option value="Child Education Allowance Judiciary(210)">28. Child Education Allowance Judiciary(210)</option>
+          <option value="Transport Allowance Judiciary(211)">29. Transport Allowance Judiciary(211)</option>
+          <option value="Furniture and Ac Allowance Judiciary(212)">30. Furniture and Ac Allowance Judiciary(212)</option>
           <option value="Dress Allowance">31. Dress Allowance</option>
         </select>
       </div>
+
       <h3>5. Reference Details</h3>
       <div class="fieldset">
-        <div id="reference-inputs">
-          <!-- Populated by JS on load -->
-        </div>
-        <button class="btn-add" onclick="addRefInput()">
-          + Add More Reference
-        </button>
+        <div id="reference-inputs"></div>
+        <button class="btn-add" onclick="addRefInput()">+ Add More Reference</button>
       </div>
 
-      <h3>6. Certificate & Sanction</h3>
+      <h3>6. Certificate &amp; Sanction</h3>
       <div class="fieldset">
-        <label><dist>Dist/Sub Treasury</label>
-        <input
-          type="text"
-          id="inTreasury"
-          value=""
-          placeholder="Treasury Name "
-          oninput="updatePDF('outTreasury')"
-        />
-        <label style="margin-top: 10px">Head of Account</label>
-        <input
-          type="text"
-          id="inHoA"
-          value=""
-          placeholder="2210-02-101-97-00-01-05 Other Allowances "
-          oninput="updatePDF('outHoA')"
-        />
+        <label>Dist/Sub Treasury</label>
+        <input type="text" id="inTreasury" value="" placeholder="Treasury Name" oninput="updatePDF('outTreasury')" />
+        <label style="margin-top:10px">Head of Account</label>
+        <input type="text" id="inHoA" value="" placeholder="2210-02-101-97-00-01-05 Other Allowances" oninput="updatePDF('outHoA')" />
       </div>
 
-      <h3>
-        7. Upload Signature & seals
-       <a
-  href="https://cert.rubundroid.com/img"
-  target="_blank"
-  title="Crop/Edit Images"
-  style="
-    text-decoration: none;
-    font-size: 16px;
-    margin-left: 8px;
-    color: white; /* ബോക്സിന് ഉള്ളിലെ ടെക്സ്റ്റ് കളര്‍ */
-    background-color: #2485f4; /* ബോക്സിന്റെ നീല കളര്‍ */
-    padding: 10px 20px; /* ബോക്സിന് ഉള്ളിലെ സ്പേസ് */
-    border-radius: 5px; /* ബോക്സിന്റെ വശങ്ങള്‍ വട്ടത്തിലാക്കാന്‍ */
-    display: inline-flex; /* ചിഹ്നവും ടെക്സ്റ്റും ഒരേ വരിയിൽ വരാൻ */
-    align-items: center; /* വെർട്ടിക്കൽ ആയി നടുവിൽ വരാൻ */
-    gap: 8px; /* ചിഹ്നവും ടെക്സ്റ്റും തമ്മിലുള്ള അകലം */
-  "
->
-  ✂️ Crop & Edit
-</a>
-        </a>
+      <h3>7. Upload Signature &amp; Seals
+        
       </h3>
       <div class="fieldset">
         <div class="upload-stack">
+          <a href="https://cert.rubundroid.com/img" target="_blank" title="Crop/Edit Images"
+   style="text-decoration:none; font-size:16px; margin-left:8px; color:white; background-color:#2485f4;
+          padding: 8px 20px; border-radius:5px; display:inline-block;
+          width: auto; text-align: center; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+   Sign & Seal ✂️ Crop &amp; Edit
+</a>
           <div class="upload-row">
             <label>Signature</label>
-            <input type="file" onchange="loadImg(event, 'outSig')" />
+            <input type="file" onchange="loadImg(event,'outSig')" />
           </div>
           <div class="upload-row">
             <label>Desig. Seal</label>
-            <input type="file" onchange="loadImg(event, 'outDesigSeal')" />
+            <input type="file" onchange="loadImg(event,'outDesigSeal')" />
           </div>
           <div class="upload-row">
             <label>Office Seal</label>
-            <input type="file" onchange="loadImg(event, 'outOfficeSeal')" />
+            <input type="file" onchange="loadImg(event,'outOfficeSeal')" />
           </div>
         </div>
       </div>
+
       <h4>8. File Manager</h4>
       <div class="fieldset">
-        <div
-          class="draft-buttons"
-          style="margin: 20px 0; display: flex; gap: 10px"
-        >
-          <button
-            onclick="saveDraft()"
-            style="
-              padding: 10px 55px;
-              background: #28a745;
-              color: white;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-            "
-          >
-            Save Draft 💾
-          </button>
-
-          <button
-            onclick="loadDraft()"
-            style="
-              padding: 10px 55px;
-              background: #17a2b8;
-              color: white;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-            "
-          >
-            Load Draft 📄
-          </button>
-
-          <button
-            onclick="clearDraft()"
-            style="
-              padding: 10px 55px;
-              background: #dc3545;
-              color: white;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-            "
-          >
-            Clear Draft 🗑️
-          </button>
+        <div class="draft-buttons" style="margin:20px 0;display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="saveDraft()" style="padding:20px 50px;background:#28a745;color:white;border:none;border-radius:5px;cursor:pointer;">Save Draft 💾</button>
+          <button onclick="loadDraft()" style="padding:20px 50px;background:#17a2b8;color:white;border:none;border-radius:5px;cursor:pointer;">Load Draft 📄</button>
+          <button onclick="clearDraft()" style="padding:20px 50px;background:#dc3545;color:white;border:none;border-radius:5px;cursor:pointer;">Clear Draft 🗑️</button>
         </div>
       </div>
-      <div
-        id="counterContainer"
-        style="
-          display: none;
-          text-align: center;
-          font-size: 14px;
-          color: #4b5563;
-          margin-top: 15px;
-          padding: 10px;
-          background-color: #e0e7ff;
-          border-radius: 8px;
-        "
-      >
-        Count:
-        <span
-          id="countDisplay"
-          style="font-weight: 900; color: #4f46e5; font-size: 16px"
-          >0</span
-        >
+
+      <div id="counterContainer" style="display:none;text-align:center;font-size:14px;color:#4b5563;margin-top:15px;padding:10px;background-color:#e0e7ff;border-radius:8px;">
+        PDF Count: <span id="pdfCountDisplay" style="font-weight:900;color:#4f46e5;font-size:16px;">0</span>
       </div>
-    </div>
+    </div><!-- /.input-panel -->
+
     <div class="preview-panel">
       <div id="printable-area">
         <div class="pdf-header">
-          <p>
-            Proceedings of
-            <span id="outHeaderDesig"></span>,
-          </p>
-          <p>
-            <span id="outInstName"></span>
-          </p>
+          <p>Proceedings of <span id="outHeaderDesig"></span>,</p>
+          <p><span id="outInstName"></span></p>
         </div>
-
-        <p>
-          <b>Present:</b> <span id="outDdoName"></span>; PEN
-          <span id="outDdoPen"></span>; <span id="outDdoDesig"></span>.
-        </p>
-
-        <p>
-          <b>Sub: -</b>
-          <span class="allowance-text"></span> for the year
-          <span class="currentFY"></span> - Sanctioned orders issued-
-        </p>
-
+        <p><b>Present:</b> <span id="outDdoName"></span>; PEN <span id="outDdoPen"></span>; <span id="outDdoDesig"></span>.</p>
+        <p><b>Sub: -</b> <span class="allowance-text"></span> for the year <span class="currentFY"></span> - Sanctioned orders issued-</p>
         <div class="ref-section">
           <div class="ref-label">Ref: -</div>
-          <div class="ref-list" id="ref-list-content">
-            <!-- Populated dynamically -->
-          </div>
+          <div class="ref-list" id="ref-list-content"></div>
         </div>
-
         <div class="order-meta">
           <span>Order No. <span id="outOrderNo"></span></span>
           <span>Dated <span id="outDate"></span></span>
         </div>
-
-        <p
-          contenteditable="true"
-          style="text-indent: 40px; text-align: justify; line-height: 1.3"
-        >
-          As per Govt: Order read above, the following employees of this
-          institution are eligible for
-          <span class="allowance-text"></span> for the year
-          <span class="currentFY"></span>
-          <span id="page-ref-text" style="display: inline"></span>
-          as per ref. 1, details noted below.
+        <p contenteditable="true" style="text-indent:40px;text-align:justify;line-height:1.3">
+          As per Govt: Order read above, the following employees of this institution are eligible for
+          <span class="allowance-text"></span> for the year <span class="currentFY"></span>
+          <span id="page-ref-text" style="display:inline"></span> as per ref. 1, details noted below.
         </p>
-
         <table class="receipt-table">
           <thead>
             <tr>
-              <th class="c" style="width: 10%">Sl No.</th>
-              <th style="width: 40%">Name & PEN</th>
-              <th style="width: 35%">Designation</th>
-              <th class="c" style="width: 15%">Amount ₹</th>
+              <th class="c" style="width:10%">Sl No.</th>
+              <th style="width:40%">Name &amp; PEN</th>
+              <th style="width:35%">Designation</th>
+              <th class="c" style="width:15%">Amount ₹</th>
             </tr>
           </thead>
           <tbody id="pdfTableBody"></tbody>
           <tfoot>
-            <tr style="font-weight: bold">
+            <tr style="font-weight:bold">
               <td colspan="3" class="r">GRAND TOTAL ₹</td>
               <td class="c"><span id="outTotalAmt"></span> /-</td>
             </tr>
             <tr>
-              <td colspan="4" class="c" style="text-transform: capitalize">
+              <td colspan="4" class="c" style="text-transform:capitalize">
                 <b>Total Rupees <span id="outTotalText"></span> only</b>
               </td>
             </tr>
           </tfoot>
         </table>
-
         <div id="uniform-cert-section">
-          <p
-            contenteditable="true"
-            style="text-indent: 40px; text-align: justify; line-height: 1.3"
-          >
-            Certified that undertaking as per ref. 2 has been obtained from
-            above employees and filed in this office. Also certified that 12
-            months completed from the date of sanctioning the
-            <span class="allowance-text"></span> in the previous financial year,
-            and the allowance has not paid in this financial year (<span
-              class="currentFY"
-            ></span
-            >) as per ref. 3.
+          <p contenteditable="true" style="text-indent:40px;text-align:justify;line-height:1.3">
+            Certified that undertaking as per ref. 2 has been obtained from above employees and filed in this office.
+            Also certified that 12 months completed from the date of sanctioning the <span class="allowance-text"></span>
+            in the previous financial year, and the allowance has not paid in this financial year
+            (<span class="currentFY"></span>) as per ref. 3.
           </p>
         </div>
-
-        <p
-          contenteditable="true"
-          style="text-indent: 40px; text-align: justify; line-height: 1.3"
-        >
-          Sanction is here by accorded for the drawl of the same from the Sub
-          Treasury <span id="outTreasury"></span>, from the Head of Account
-          <span id="outHoA"></span>.
+        <p contenteditable="true" style="text-indent:40px;text-align:justify;line-height:1.3">
+          Sanction is here by accorded for the drawl of the same from the Sub Treasury
+          <span id="outTreasury"></span>, from the Head of Account <span id="outHoA"></span>.
         </p>
-
         <div class="pdf-footer">
           <div class="footer-left">
-            <img
-              id="outOfficeSeal"
-              class="office-seal-img"
-              src=""
-              alt="Office Seal"
-              style="max-width: 150px"
-            />
+            <img id="outOfficeSeal" class="office-seal-img" src="" alt="Office Seal" style="max-width:150px" />
           </div>
-
-          <div class="footer-right" style="text-align: right; width: 300px">
-            <img
-              id="outSig"
-              class="uploaded-img"
-              src=""
-              alt="Signature"
-              style="max-width: 150px; margin-bottom: 5px"
-            /><br />
+          <div class="footer-right" style="text-align:right;width:300px">
+            <img id="outSig" class="uploaded-img" src="" alt="Signature" style="max-width:150px;margin-bottom:5px" /><br />
             <b><span id="outDdoNameCopy"></span></b><br />
             PEN <span id="outDdoPenCopy"></span><br />
             <span id="outDdoDesigCopy"></span><br />
             <span id="outInstNameCopy"></span><br />
-            <img
-              id="outDesigSeal"
-              class="uploaded-img"
-              src=""
-              alt="Designation Seal"
-              style="max-width: 150px; margin-top: 5px"
-            />
+            <img id="outDesigSeal" class="uploaded-img" src="" alt="Designation Seal" style="max-width:150px;margin-top:5px" />
           </div>
         </div>
-      </div>
+      </div><!-- /#printable-area -->
       <button class="btn-print" onclick="generatePDF()">PRINT PDF</button>
-    </div>
+    </div><!-- /.preview-panel -->
 
-    <script>
-      function updateAllowanceText(val) {
-        const elements = document.getElementsByClassName("allowance-text");
-        for (let el of elements) {
-          el.innerText = val;
-        }
+  </div><!-- /#main-app -->
 
-        const certSection = document.getElementById("uniform-cert-section");
-        const pageRefText = document.getElementById("page-ref-text");
-        const refContainer = document.getElementById("reference-inputs");
 
-        // Clear existing reference inputs
-        refContainer.innerHTML = "";
+  <!-- ════════════════════════════════════════
+       JAVASCRIPT
+  ════════════════════════════════════════ -->
+  <script>
+    /* ──────────────────────────────────────
+       VISIT COUNTER (localStorage-based)
+       Increments on every page load and
+       shows the count instantly.
+    ────────────────────────────────────── */
+    (function initVisitCounter() {
+      const VISIT_KEY = 'nam_visit_count';
+      let count = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10);
+      count += 1;
+      localStorage.setItem(VISIT_KEY, count);
+      document.getElementById('visitCount').textContent = count.toLocaleString('en-IN');
+    })();
 
-        if (val === "Uniform Allowance(13)") {
-          certSection.style.display = "block";
-          pageRefText.style.display = "inline";
-          addRefInput("GO (P) No. 27/2021/Fin dt: 10/02/2021");
-          addRefInput("Cir No. 38/2017/Fin dt: 23/05/2017");
-          addRefInput("Cir No. 10/2024/Fin dt: 13/02/2024");
-        } else {
-          certSection.style.display = "none";
-          pageRefText.style.display = "none";
-          addRefInput("GO (P) No. 27/2021/Fin dt: 10/02/2021");
-        }
+    /* ──────────────────────────────────────
+       WELCOME → APP TRANSITION
+    ────────────────────────────────────── */
+    function launchApp() {
+      const welcome = document.getElementById('welcome-screen');
+      const app     = document.getElementById('main-app');
 
-        populateTable();
-      }
+      // Fade out welcome screen
+      welcome.classList.add('fade-out');
 
-      function addRefInput(val = "") {
-        const container = document.getElementById("reference-inputs");
-        const newRow = document.createElement("div");
-        newRow.className = "in-row";
-        newRow.innerHTML = `
-            <div class="in-group">
-                <input type="text" class="ref-text" oninput="populateTable()" placeholder="Enter Reference (e.g. GO (P) No. 27/2021/Fin)" value="${val}">
-            </div>
-            <button class="btn-remove" onclick="removeRefRow(this)">X</button>
-        `;
-        container.appendChild(newRow);
-      }
+      setTimeout(() => {
+        welcome.style.display = 'none';
 
-      function removeRefRow(btn) {
-        btn.parentElement.remove();
-        populateTable();
-      }
+        // Show main app with fade-in
+        app.style.display = 'flex';
+        // Force reflow so transition triggers
+        void app.offsetWidth;
+        app.classList.add('visible');
 
-      function numberToWords(num) {
-        var a = [
-          "",
-          "one ",
-          "two ",
-          "three ",
-          "four ",
-          "five ",
-          "six ",
-          "seven ",
-          "eight ",
-          "nine ",
-          "ten ",
-          "eleven ",
-          "twelve ",
-          "thirteen ",
-          "fourteen ",
-          "fifteen ",
-          "sixteen ",
-          "seventeen ",
-          "eighteen ",
-          "nineteen ",
-        ];
-        var b = [
-          "",
-          "",
-          "twenty",
-          "thirty",
-          "forty",
-          "fifty",
-          "sixty",
-          "seventy",
-          "eighty",
-          "ninety",
-        ];
-        var n = ("000000000" + num)
-          .substr(-9)
-          .match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-        if (!n) return "";
-        var str = "";
-        str +=
-          n[1] != 0
-            ? (a[Number(n[1])] || b[n[1][0]] + " " + a[n[1][1]]) + "crore "
-            : "";
-        str +=
-          n[2] != 0
-            ? (a[Number(n[2])] || b[n[2][0]] + " " + a[n[2][1]]) + "lakh "
-            : "";
-        str +=
-          n[3] != 0
-            ? (a[Number(n[3])] || b[n[3][0]] + " " + a[n[3][1]]) + "thousand "
-            : "";
-        str +=
-          n[4] != 0
-            ? (a[Number(n[4])] || b[n[4][0]] + " " + a[n[4][1]]) + "hundred "
-            : "";
-        str +=
-          n[5] != 0 ? a[Number(n[5])] || b[n[5][0]] + " " + a[n[5][1]] : "";
-        return str.trim();
-      }
+        // Initialise the main app
+        initMainApp();
+      }, 620); // matches the CSS transition duration
+    }
 
-      function getFinancialYear() {
-        const today = new Date();
-        const month = today.getMonth() + 1;
-        const year = today.getFullYear();
-        return month >= 4
-          ? `${year}-${(year + 1).toString().slice(-2)}`
-          : `${year - 1}-${year.toString().slice(-2)}`;
-      }
+    /* ──────────────────────────────────────
+       MAIN APP INITIALISATION
+    ────────────────────────────────────── */
+    function initMainApp() {
+      // Set financial year
+      const fy = getFinancialYear();
+      document.querySelectorAll('.currentFY').forEach(el => el.innerText = fy);
 
-      function updatePDF(targetId) {
-        let val = event.target.value;
-        let targetEl = document.getElementById(targetId);
-        if (targetEl) targetEl.innerText = val;
-        if (targetId === "outDdoName")
-          document.getElementById("outDdoNameCopy").innerText = val;
-        if (targetId === "outDdoPen")
-          document.getElementById("outDdoPenCopy").innerText = val;
-        if (targetId === "outInstName")
-          document.getElementById("outInstNameCopy").innerText = val;
-        if (targetId === "outDdoDesig") {
-          document.getElementById("outDdoDesigCopy").innerText = val;
-          document.getElementById("outHeaderDesig").innerText = val;
-        }
-      }
+      // Set up allowance references and populate table
+      updateAllowanceText(document.getElementById('inAllowanceType').value);
 
-      function loadImg(event, targetId) {
-        var reader = new FileReader();
-        reader.onload = function () {
-          var output = document.getElementById(targetId);
-          output.src = reader.result;
-          output.style.display = "block";
-        };
-        reader.readAsDataURL(event.target.files[0]);
-      }
-
-      function addEmployeeInput() {
-        const container = document.getElementById("employee-inputs");
-        const newRow = document.createElement("div");
-        newRow.className = "in-row";
-        newRow.innerHTML = `
-            <div class="in-group"><input type="text" class="e-name" oninput="populateTable()" placeholder="Name & Pen"></div>
-            <div class="in-group"><input type="text" class="e-desig" oninput="populateTable()" placeholder="Designation"></div>
-            <div class="in-group"><input type="number" class="e-amt" oninput="populateTable()" placeholder="Amount"></div>
-            <button class="btn-remove" onclick="removeEmployeeRow(this)">X</button>
-        `;
-        container.appendChild(newRow);
-      }
-
-      function removeEmployeeRow(btn) {
-        btn.parentElement.remove();
-        populateTable();
-      }
-
-      // Merged populateTable function
-      function populateTable() {
-        // 1. Handle Employee Table and Totals
-        const names = document.getElementsByClassName("e-name");
-        const desigs = document.getElementsByClassName("e-desig");
-        const amts = document.getElementsByClassName("e-amt");
-        const tableBody = document.getElementById("pdfTableBody");
-        tableBody.innerHTML = "";
-        let total = 0;
-
-        for (let i = 0; i < names.length; i++) {
-          if (names[i].value.trim() !== "") {
-            let amtVal = parseFloat(amts[i].value) || 0;
-            total += amtVal;
-            tableBody.innerHTML += `<tr><td class="c">${i + 1}.</td><td>${names[i].value}</td><td>${desigs[i].value}</td><td class="c">${amtVal}/-</td></tr>`;
-          }
-        }
-        document.getElementById("outTotalAmt").innerText = total;
-        document.getElementById("outTotalText").innerText =
-          total > 0 ? numberToWords(total) : "Zero";
-
-        // 2. Handle Reference Details
-        const refInputs = document.querySelectorAll(".ref-text");
-        let refHTML = "";
-        let refIndex = 1;
-        refInputs.forEach((input) => {
-          if (input.value.trim() !== "") {
-            refHTML += `${refIndex}. ${input.value}<br>`;
-            refIndex++;
-          }
-        });
-
-        document.getElementById("ref-list-content").innerHTML = refHTML;
-      }
-
-      function generatePDF() {
-        populateTable();
-        const element = document.getElementById("printable-area");
-        const opt = {
-          margin: [0, 0, 0, 0],
-          filename: "SPARK_Document.pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, scrollY: 0 },
-          jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-          pagebreak: { mode: ["css", "legacy"] },
-        };
-        html2pdf().set(opt).from(element).save();
-        incrementCounter();
-      }
-      // പേജ് ലോഡ് ആകുമ്പോൾ സേവ് ചെയ്ത റഫറൻസുകൾ കാണിക്കാൻ
-      document.addEventListener("DOMContentLoaded", () => {
-        displayReferences();
+      // Replay existing input values to the preview
+      document.querySelectorAll('input[oninput], textarea[oninput], select[onchange]').forEach(el => {
+        el.dispatchEvent(new Event('input'));
+        el.dispatchEvent(new Event('change'));
       });
 
-      // റഫറൻസുകൾ സേവ് ചെയ്യാനും കാണിക്കാനും ഉള്ള ഫംഗ്ഷൻ
-      function addReference() {
-        const refInput = document.getElementById("reference-input"); // നിങ്ങളുടെ ഇൻപുട്ട് ഐഡി
-        const refValue = refInput.value.trim();
+      // Show remote PDF counter if available
+      getInitialCount();
+    }
 
-        if (refValue === "") {
-          alert("ദയവായി ഒരു റഫറൻസ് ടൈപ്പ് ചെയ്യുക!");
-          return;
-        }
+    /* ──────────────────────────────────────
+       ALLOWANCE & REFERENCE HELPERS
+    ────────────────────────────────────── */
+    function updateAllowanceText(val) {
+      document.querySelectorAll('.allowance-text').forEach(el => el.innerText = val);
 
-        let savedRefs = JSON.parse(localStorage.getItem("myReferences")) || [];
-        savedRefs.push(refValue);
-        localStorage.setItem("myReferences", JSON.stringify(savedRefs));
+      const certSection  = document.getElementById('uniform-cert-section');
+      const pageRefText  = document.getElementById('page-ref-text');
+      const refContainer = document.getElementById('reference-inputs');
+      refContainer.innerHTML = '';
 
-        refInput.value = ""; // ഇൻപുട്ട് ക്ലിയർ ചെയ്യാൻ
-        displayReferences();
+      if (val === 'Uniform Allowance(13)') {
+        certSection.style.display = 'block';
+        pageRefText.style.display = 'inline';
+        addRefInput('GO (P) No. 27/2021/Fin dt: 10/02/2021');
+        addRefInput('Cir No. 38/2017/Fin dt: 23/05/2017');
+        addRefInput('Cir No. 10/2024/Fin dt: 13/02/2024');
+      } else {
+        certSection.style.display = 'none';
+        pageRefText.style.display = 'none';
+        addRefInput('GO (P) No. 27/2021/Fin dt: 10/02/2021');
       }
+      populateTable();
+    }
 
-      function displayReferences() {
-        const refListContent = document.getElementById("ref-list-content");
-        let savedRefs = JSON.parse(localStorage.getItem("myReferences")) || [];
+    function addRefInput(val = '') {
+      const container = document.getElementById('reference-inputs');
+      const newRow    = document.createElement('div');
+      newRow.className = 'in-row';
+      newRow.innerHTML = `
+        <div class="in-group">
+          <input type="text" class="ref-text" oninput="populateTable()"
+                 placeholder="Enter Reference (e.g. GO (P) No. 27/2021/Fin)" value="${val}">
+        </div>
+        <button class="btn-remove" onclick="removeRefRow(this)">X</button>`;
+      container.appendChild(newRow);
+    }
 
-        refListContent.innerHTML = ""; // പഴയ ലിസ്റ്റ് ക്ലിയർ ചെയ്യാൻ
+    function removeRefRow(btn) { btn.parentElement.remove(); populateTable(); }
 
-        savedRefs.forEach((ref, index) => {
-          const div = document.createElement("div");
-          div.className = "ref-item"; // സ്റ്റൈലിംഗിനായി
-          div.style.display = "flex";
-          div.style.marginBottom = "10px";
-          div.style.gap = "10px";
+    /* ──────────────────────────────────────
+       NUMBER → WORDS
+    ────────────────────────────────────── */
+    function numberToWords(num) {
+      var a = ['','one ','two ','three ','four ','five ','six ','seven ','eight ','nine ',
+               'ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ',
+               'seventeen ','eighteen ','nineteen '];
+      var b = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+      var n = ('000000000'+num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+      if (!n) return '';
+      var str='';
+      str += n[1]!=0 ? (a[Number(n[1])]||b[n[1][0]]+' '+a[n[1][1]])+'crore '  :'';
+      str += n[2]!=0 ? (a[Number(n[2])]||b[n[2][0]]+' '+a[n[2][1]])+'lakh '   :'';
+      str += n[3]!=0 ? (a[Number(n[3])]||b[n[3][0]]+' '+a[n[3][1]])+'thousand ':'';
+      str += n[4]!=0 ? (a[Number(n[4])]||b[n[4][0]]+' '+a[n[4][1]])+'hundred ' :'';
+      str += n[5]!=0 ?  a[Number(n[5])]||b[n[5][0]]+' '+a[n[5][1]]             :'';
+      return str.trim();
+    }
 
-          div.innerHTML = `
-            <input type="text" value="${ref}" id="ref-${index}" class="form-control" readonly>
-            <button onclick="editRef(${index})" id="edit-btn-${index}" class="btn btn-primary">Edit</button>
-            <button onclick="deleteRef(${index})" class="btn btn-danger">X</button>
-        `;
-          refListContent.appendChild(div);
-        });
+    /* ──────────────────────────────────────
+       FINANCIAL YEAR
+    ────────────────────────────────────── */
+    function getFinancialYear() {
+      const today = new Date();
+      const month = today.getMonth()+1;
+      const year  = today.getFullYear();
+      return month>=4
+        ? `${year}-${(year+1).toString().slice(-2)}`
+        : `${year-1}-${year.toString().slice(-2)}`;
+    }
+
+    /* ──────────────────────────────────────
+       LIVE PDF PREVIEW UPDATE
+    ────────────────────────────────────── */
+    function updatePDF(targetId) {
+      const val = event.target.value;
+      const el  = document.getElementById(targetId);
+      if (el) el.innerText = val;
+      if (targetId==='outDdoName')  document.getElementById('outDdoNameCopy').innerText  = val;
+      if (targetId==='outDdoPen')   document.getElementById('outDdoPenCopy').innerText   = val;
+      if (targetId==='outInstName') document.getElementById('outInstNameCopy').innerText = val;
+      if (targetId==='outDdoDesig'){
+        document.getElementById('outDdoDesigCopy').innerText  = val;
+        document.getElementById('outHeaderDesig').innerText   = val;
       }
+    }
 
-      // എഡിറ്റ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
-      function editRef(index) {
-        const input = document.getElementById(`ref-${index}`);
-        const editBtn = document.getElementById(`edit-btn-${index}`);
-
-        if (editBtn.innerText === "Edit") {
-          input.readOnly = false;
-          input.focus();
-          editBtn.innerText = "Save";
-          editBtn.className = "btn btn-success";
-        } else {
-          let savedRefs = JSON.parse(localStorage.getItem("myReferences"));
-          savedRefs[index] = input.value;
-          localStorage.setItem("myReferences", JSON.stringify(savedRefs));
-
-          input.readOnly = true;
-          editBtn.innerText = "Edit";
-          editBtn.className = "btn btn-primary";
-          displayReferences(); // ലിസ്റ്റ് പുതുക്കാൻ
-        }
-      }
-
-      // ഡിലീറ്റ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
-      function deleteRef(index) {
-        let savedRefs = JSON.parse(localStorage.getItem("myReferences"));
-        savedRefs.splice(index, 1);
-        localStorage.setItem("myReferences", JSON.stringify(savedRefs));
-        displayReferences();
-      }
-      window.onload = function () {
-        const fy = getFinancialYear();
-        const fyElements = document.getElementsByClassName("currentFY");
-        for (let el of fyElements) el.innerText = fy;
-        {
-          getInitialCount;
-        }
-
-        // This sets up initial refs and triggers populateTable automatically
-        updateAllowanceText(document.getElementById("inAllowanceType").value);
+    /* ──────────────────────────────────────
+       IMAGE UPLOAD
+    ────────────────────────────────────── */
+    function loadImg(event, targetId) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        var output = document.getElementById(targetId);
+        output.src = reader.result;
+        output.style.display = 'block';
       };
-      // 1. ഡ്രാഫ്റ്റ് സേവ് ചെയ്യാനുള്ള പുതിയ ഫംഗ്ഷൻ (ടേബിൾ സപ്പോർട്ട് ഉൾപ്പെടെ)
-      function saveDraft() {
-        const printableArea = document.getElementById("printable-area");
+      reader.readAsDataURL(event.target.files[0]);
+    }
 
-        // പ്രധാന ട്രിക്ക്: വലതുവശത്തെ ടേബിളിൽ ടൈപ്പ് ചെയ്ത കാര്യങ്ങൾ HTML-ൽ ഉറപ്പിച്ചു നിർത്താൻ
-        printableArea
-          .querySelectorAll("input")
-          .forEach((el) => el.setAttribute("value", el.value));
-        printableArea
-          .querySelectorAll("textarea")
-          .forEach((el) => (el.innerHTML = el.value));
-        printableArea.querySelectorAll("select").forEach((el) => {
-          Array.from(el.options).forEach((opt) => {
-            if (opt.value === el.value)
-              opt.setAttribute("selected", "selected");
-            else opt.removeAttribute("selected");
-          });
-        });
+    /* ──────────────────────────────────────
+       EMPLOYEE ROWS
+    ────────────────────────────────────── */
+    function addEmployeeInput() {
+      const container = document.getElementById('employee-inputs');
+      const newRow    = document.createElement('div');
+      newRow.className = 'in-row';
+      newRow.innerHTML = `
+        <div class="in-group"><input type="text"   class="e-name"  oninput="populateTable()" placeholder="Name &amp; Pen"></div>
+        <div class="in-group"><input type="text"   class="e-desig" oninput="populateTable()" placeholder="Designation"></div>
+        <div class="in-group"><input type="number" class="e-amt"   oninput="populateTable()" placeholder="Amount"></div>
+        <button class="btn-remove" onclick="removeEmployeeRow(this)">X</button>`;
+      container.appendChild(newRow);
+    }
+    function removeEmployeeRow(btn) { btn.parentElement.remove(); populateTable(); }
 
-        const certContent = printableArea.innerHTML;
+    /* ──────────────────────────────────────
+       POPULATE TABLE
+    ────────────────────────────────────── */
+    function populateTable() {
+      const names   = document.getElementsByClassName('e-name');
+      const desigs  = document.getElementsByClassName('e-desig');
+      const amts    = document.getElementsByClassName('e-amt');
+      const tbody   = document.getElementById('pdfTableBody');
+      tbody.innerHTML = '';
+      let total = 0;
 
-        // ഇടതുവശത്തെ എല്ലാ ഇൻപുട്ടുകളും എടുക്കുന്നു (ID ഇല്ലാത്തവയും ഇതിൽ വരും)
-        const inputs = document.querySelectorAll("input, textarea, select");
-        let inputValues = {};
-
-        inputs.forEach((input, index) => {
-          if (input.type !== "file") {
-            // ഫയലുകൾ സേവ് ചെയ്യാൻ പാടില്ല
-            // ID ഇല്ലെങ്കിൽ ബോക്സിന്റെ സ്ഥാനം (index) വെച്ച് സേവ് ചെയ്യും
-            const key = input.id ? input.id : "item_" + index;
-            inputValues[key] = input.value;
-          }
-        });
-
-        const draftData = {
-          html: certContent,
-          inputs: inputValues,
-        };
-
-        localStorage.setItem("myCertDraft", JSON.stringify(draftData));
-        alert("ടേബിൾ ഉൾപ്പെടെ ഡ്രാഫ്റ്റ് വിജയകരമായി സേവ് ചെയ്തു! 💾");
-      }
-
-      // 2. സേവ് ചെയ്ത ഡ്രാഫ്റ്റ് തിരികെ എടുക്കാൻ
-      function loadDraft() {
-        const savedData = localStorage.getItem("myCertDraft");
-
-        if (savedData) {
-          const draft = JSON.parse(savedData);
-
-          // വലതുവശത്തെ സർട്ടിഫിക്കറ്റും ടേബിളും തിരികെ വെക്കുന്നു
-          if (draft.html) {
-            document.getElementById("printable-area").innerHTML = draft.html;
-          }
-
-          // ഇടതുവശത്തെ ഇൻപുട്ട് ബോക്സുകളിലേക്ക് ഡാറ്റ തിരികെ വെക്കുന്നു
-          if (draft.inputs) {
-            const inputs = document.querySelectorAll("input, textarea, select");
-            inputs.forEach((input, index) => {
-              if (input.type !== "file") {
-                const key = input.id ? input.id : "item_" + index;
-                if (draft.inputs[key] !== undefined) {
-                  input.value = draft.inputs[key];
-                  // ഡാറ്റ തനിയെ വലത്തേക്ക് അപ്ഡേറ്റ് ആകാൻ
-                  input.dispatchEvent(new Event("input"));
-                  input.dispatchEvent(new Event("change"));
-                }
-              }
-            });
-          }
-
-          alert("ടേബിൾ ഉൾപ്പെടെ പഴയ ഡ്രാഫ്റ്റ് ലോഡ് ചെയ്തു! 📄");
-        } else {
-          alert("സേവ് ചെയ്ത ഡ്രാഫ്റ്റുകൾ ഒന്നുമില്ല!");
+      for (let i=0; i<names.length; i++) {
+        if (names[i].value.trim()!=='') {
+          let amtVal = parseFloat(amts[i].value)||0;
+          total += amtVal;
+          tbody.innerHTML += `<tr>
+            <td class="c">${i+1}.</td>
+            <td>${names[i].value}</td>
+            <td>${desigs[i].value}</td>
+            <td class="c">${amtVal}/-</td>
+          </tr>`;
         }
       }
+      document.getElementById('outTotalAmt').innerText  = total;
+      document.getElementById('outTotalText').innerText = total>0 ? numberToWords(total) : 'Zero';
 
-      // 3. ഡ്രാഫ്റ്റ് ക്ലിയർ ചെയ്യാൻ
-      function clearDraft() {
-        if (confirm("സേവ് ചെയ്ത ഡ്രാഫ്റ്റ് പൂർണ്ണമായും ഡിലീറ്റ് ചെയ്യണോ?")) {
-          localStorage.removeItem("myCertDraft");
-          alert("ഡ്രാഫ്റ്റ് ക്ലിയർ ചെയ്തു!");
-          location.reload();
-        }
-      }
+      // Reference list
+      let refHTML='', refIndex=1;
+      document.querySelectorAll('.ref-text').forEach(input => {
+        if (input.value.trim()!=='') { refHTML+=`${refIndex}. ${input.value}<br>`; refIndex++; }
+      });
+      document.getElementById('ref-list-content').innerHTML = refHTML;
+    }
 
-      // 4. പേജ് ലോഡ് ആകുമ്പോൾ തന്നെ ഇടതുവശത്തെ ഡാറ്റ വലത്തേക്ക് കൊണ്ടുവരാൻ
-      window.addEventListener("load", function () {
-        const allInputs = document.querySelectorAll(
-          "input[oninput], textarea[oninput], select[onchange]",
-        );
-        allInputs.forEach((input) => {
-          input.dispatchEvent(new Event("input"));
-          input.dispatchEvent(new Event("change"));
+    /* ──────────────────────────────────────
+       PDF GENERATION
+    ────────────────────────────────────── */
+    function generatePDF() {
+      populateTable();
+      const element = document.getElementById('printable-area');
+      const opt = {
+        margin: [0,0,0,0],
+        filename: 'Office_Proceedings.pdf',
+        image: { type:'jpeg', quality:0.98 },
+        html2canvas: { scale:2, scrollY:0 },
+        jsPDF: { unit:'in', format:'a4', orientation:'portrait' },
+        pagebreak: { mode:['css','legacy'] }
+      };
+      html2pdf().set(opt).from(element).save();
+      incrementCounter();
+    }
+
+    /* ──────────────────────────────────────
+       DRAFT SAVE / LOAD / CLEAR
+    ────────────────────────────────────── */
+    function saveDraft() {
+      const area = document.getElementById('printable-area');
+      area.querySelectorAll('input').forEach(el => el.setAttribute('value', el.value));
+      area.querySelectorAll('textarea').forEach(el => el.innerHTML = el.value);
+      area.querySelectorAll('select').forEach(el => {
+        Array.from(el.options).forEach(opt => {
+          opt.value===el.value ? opt.setAttribute('selected','selected') : opt.removeAttribute('selected');
         });
       });
-      const counterNamespace = "pro-sumeshtk";
-      const counterKey = "total-calculations";
+      const inputs = document.querySelectorAll('input, textarea, select');
+      let vals = {};
+      inputs.forEach((inp,i) => {
+        if (inp.type!=='file') vals[inp.id||'item_'+i] = inp.value;
+      });
+      localStorage.setItem('myCertDraft', JSON.stringify({ html: area.innerHTML, inputs: vals }));
+      alert('ടേബിൾ ഉൾപ്പെടെ ഡ്രാഫ്റ്റ് വിജയകരമായി സേവ് ചെയ്തു! 💾');
+    }
 
-      function getInitialCount() {
-        fetch(`https://api.counterapi.dev/v1/${counterNamespace}/${counterKey}`)
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.count && data.count > 0) {
-              document.getElementById("countDisplay").innerText = data.count;
-              document.getElementById("counterContainer").style.display =
-                "block";
+    function loadDraft() {
+      const saved = localStorage.getItem('myCertDraft');
+      if (!saved) { alert('സേവ് ചെയ്ത ഡ്രാഫ്റ്റുകൾ ഒന്നുമില്ല!'); return; }
+      const draft = JSON.parse(saved);
+      if (draft.html) document.getElementById('printable-area').innerHTML = draft.html;
+      if (draft.inputs) {
+        document.querySelectorAll('input, textarea, select').forEach((inp,i) => {
+          if (inp.type!=='file') {
+            const key = inp.id||'item_'+i;
+            if (draft.inputs[key]!==undefined) {
+              inp.value = draft.inputs[key];
+              inp.dispatchEvent(new Event('input'));
+              inp.dispatchEvent(new Event('change'));
             }
-          })
-          .catch((error) => {
-            console.log("Counter blocked by browser or ad-blocker.");
-          });
+          }
+        });
       }
+      alert('ടേബിൾ ഉൾപ്പെടെ പഴയ ഡ്രാഫ്റ്റ് ലോഡ് ചെയ്തു! 📄');
+    }
 
-      function incrementCounter() {
-        fetch(
-          `https://api.counterapi.dev/v1/${counterNamespace}/${counterKey}/up`,
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.count) {
-              document.getElementById("countDisplay").innerText = data.count;
-              document.getElementById("counterContainer").style.display =
-                "block";
-            }
-          })
-          .catch((error) => console.log("Counter increment failed."));
+    function clearDraft() {
+      if (confirm('സേവ് ചെയ്ത ഡ്രാഫ്റ്റ് പൂർണ്ണമായും ഡിലീറ്റ് ചെയ്യണോ?')) {
+        localStorage.removeItem('myCertDraft');
+        alert('ഡ്രാഫ്റ്റ് ക്ലിയർ ചെയ്തു!');
+        location.reload();
       }
-    </script>
-  </body>
+    }
 
+    /* ──────────────────────────────────────
+       REMOTE PDF COUNTER (counterapi.dev)
+    ────────────────────────────────────── */
+    const counterNamespace = 'pro-sumeshtk';
+    const counterKey       = 'total-calculations';
+
+    function getInitialCount() {
+      fetch(`https://api.counterapi.dev/v1/${counterNamespace}/${counterKey}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d && d.count > 0) {
+            document.getElementById('pdfCountDisplay').innerText = d.count;
+            document.getElementById('counterContainer').style.display = 'block';
+          }
+        })
+        .catch(() => console.log('Counter blocked.'));
+    }
+
+    function incrementCounter() {
+      fetch(`https://api.counterapi.dev/v1/${counterNamespace}/${counterKey}/up`)
+        .then(r => r.json())
+        .then(d => {
+          if (d && d.count) {
+            document.getElementById('pdfCountDisplay').innerText = d.count;
+            document.getElementById('counterContainer').style.display = 'block';
+          }
+        })
+        .catch(() => console.log('Counter increment failed.'));
+    }
+  </script>
+</body>
 </html>
